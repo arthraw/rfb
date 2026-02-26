@@ -16,7 +16,7 @@ Ingerir, transformar e disponibilizar os dados cadastrais de empresas da RFB em 
 
 ## Arquitetura
 
-```
+```shell
 Fonte (RFB)
     │
     ▼

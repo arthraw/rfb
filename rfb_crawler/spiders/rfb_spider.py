@@ -3,12 +3,14 @@ import base64
 from scrapy.http import Request
 from lxml import etree
 from datetime import datetime
+import logging
 
 class RfbSpider(scrapy.Spider):
     name = "rfb_spider"
     allowed_domains = ["arquivos.receitafederal.gov.br"]
     custom_settings = {"ROBOTSTXT_OBEY": False}
     data_list = []
+    logger = logging.getLogger(name)
 
     token = "YggdBLfdninEJX9"
     base_url = "https://arquivos.receitafederal.gov.br/public.php/webdav/"
@@ -49,7 +51,7 @@ class RfbSpider(scrapy.Spider):
                 yield self.propfind(full_url, callback=self.parse_propfind)
                 continue
 
-            if current_month in href and "Estabelecimentos0" in href:
+            if current_month in href and "Estabelecimentos9" in href:
                 result = {
                     'package_download_url' : full_url,
                     'file_name' : href.split("/")[-1],
@@ -62,5 +64,4 @@ class RfbSpider(scrapy.Spider):
         print("Spider finalizado. Criando arquivo…")
         with open('/tmp/rfb_files.json', 'w') as f:
             json.dump(self.data_list, f, indent=4)
-        print("Arquivo criado:", os.path.exists('/tmp/rfb_files.json'))
         self.logger.info(f"Arquivo JSON salvo com {len(self.data_list)} entradas")

@@ -2,11 +2,13 @@ import requests
 import json
 from src.ingestion.dto.rfb_files_dto import RfbFilesDto
 from requests.auth import HTTPBasicAuth
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_json_data(input_path: str) -> dict:
     with open(input_path) as r:
          return json.load(r)
-
 
 def json_parser(input_file_path: str):
     data_list = []
@@ -18,12 +20,15 @@ def json_parser(input_file_path: str):
         return data_list
     
     except Exception as e:
-        print(e)
+        logger.warning(e)
 
 def download_rfb_files():
     input_file_path = '/tmp/rfb_files.json'
+    logger.info(f"Reading JSON data from {input_file_path}")
     rfb_data_list = json_parser(input_file_path)
+    logger.info(f"Found {len(rfb_data_list)} RFB files to download")
     for data in rfb_data_list:
+        logger.info(f"Downloading {data.file_name} from {data.package_download_url}")
         path = f'/tmp/{data.file_name}'
         basic_auth = HTTPBasicAuth(data.auth_token,"")
         res = requests.get(data.package_download_url, auth=basic_auth)
@@ -35,7 +40,7 @@ def download_rfb_files():
                         if chunk:
                             f.write(chunk)
         else:
-            print(f"Error {res.status_code}")
+            logger.warning(f"Error {res.status_code}")
 
 if __name__ == "__main__":
     download_rfb_files()

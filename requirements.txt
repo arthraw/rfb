@@ -2,3 +2,6 @@
 scrapy
 lxml
 pendulum
+databricks-cli
+databricks-sdk
+requests

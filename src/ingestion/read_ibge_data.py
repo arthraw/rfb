@@ -24,4 +24,4 @@ df_pib = df_pib.rename(columns={
 })
 
 
-df_pib.to_csv('/tmp/PIB_MUNICIPIOS.csv', index=False)
+df_pib.to_csv('/tmp/PIB_MUNICIPIOS.csv', index=False, sep=';')

@@ -51,4 +51,5 @@ def upload_files_to_dbfs():
             except Exception as e:
                 logger.warning(f"Failed to send {file}: {e}")
 
-upload_files_to_dbfs()
+if __name__ == '__main__':
+    upload_files_to_dbfs()

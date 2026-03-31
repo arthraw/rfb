@@ -13,7 +13,7 @@ def run_scrapy():
 
 @dag(
     dag_id="ingst_rfb_data",
-    schedule="0 0 1 * *",
+    schedule="0 * * * *",
     start_date=datetime(2024, 6, 1),
     catchup=False,
     tags=["ingestion", "rfb"],
@@ -28,11 +28,17 @@ def ingst_rfb_data():
         task_id="download_files",
         bash_command="python -m src.ingestion.download_rfb_data",
     )
+    
+    download_ibge_data = BashOperator(
+        task_id="download_ibge_data",
+        bash_command="python -m src.ingestion.read_ibge_data",
+    )
 
     send_files = BashOperator(
         task_id="send_files",
         bash_command="python -m src.ingestion.send_data_to_remote",
     )
-    define_files_to_download >> download_files >> send_files
+    
+    define_files_to_download >> [download_files, download_ibge_data] >> send_files
 
 ingst_rfb_data()

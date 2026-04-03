@@ -1,22 +1,24 @@
-from airflow.sdk import dag, task
-from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import dag
 from airflow.providers.standard.operators.bash import BashOperator 
+from airflow.utils.log.logging_mixin import LoggingMixin
+from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 from pendulum import datetime
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
+import logging
 
-def run_scrapy():
-    process = CrawlerProcess(get_project_settings())
-    process.crawl("rfb_spider")
-    process.start()
-
+log = logging.getLogger(__name__)
+log = LoggingMixin().log
+default_args = {
+    'owner': 'Arthur Andrade',
+    'retries' : 1,
+}
 
 @dag(
     dag_id="ingst_rfb_data",
-    schedule="0 * * * *",
+    # schedule="0 * * * *",
     start_date=datetime(2024, 6, 1),
     catchup=False,
     tags=["ingestion", "rfb"],
+    default_args=default_args
 )
 def ingst_rfb_data():
     define_files_to_download = BashOperator(
@@ -38,7 +40,16 @@ def ingst_rfb_data():
         task_id="send_files",
         bash_command="python -m src.ingestion.send_data_to_remote",
     )
-    
-    define_files_to_download >> [download_files, download_ibge_data] >> send_files
+
+    trigger_transformation_dag = TriggerDagRunOperator(
+        task_id="trigger_transformation_dag",
+        trigger_dag_id="transform_gov_data",
+        wait_for_completion=False,
+        poke_interval=30,
+    )
+
+    log.info("Defined tasks for RFB data ingestion DAG.")
+    define_files_to_download >> [download_files, download_ibge_data] >> send_files >> trigger_transformation_dag
+    log.info("Set task dependencies for RFB data ingestion DAG.")
 
 ingst_rfb_data()

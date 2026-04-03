@@ -23,10 +23,10 @@ Processar os dados abertos do CNPJ da RFB em um formato estruturado e analítico
 Fonte (RFB)
     │
     ▼
-Staging (Volume)        ← arquivos .zip brutos da RFB
+Staging (Volume)        ← arquivos .csv brutos da RFB e IBGE
     │
     ▼
-Bronze (Delta Table)    ← CSV extraído, sem header, tudo como string
+Bronze (Delta Table)    ← dados sem tratamento com schema/colunas basicas aplicadas (apenas para organizar em tabelas)
     │
     ▼
 Silver (dbt)            ← schema aplicado, tipos corretos, colunas nomeadas
@@ -105,12 +105,20 @@ DATABRICKS_TOKEN=<your-token>
 astro dev start
 ```
 
-### 5. Executar as transformações com dbt
+### 5. Criar Variables do Airflow
+
+Crie as variaveis do databricks para as dags conseguirem conectar com fontes externas. (Ex: Databricks)
+
+![Tela do airflow com as variaveis](/imgs/variables_airflow.png)
+
+### 6. Executar as transformações com dbt OU Executar as dags direto na UI do airflow
 
 ```bash
 cd src/dbt
 dbt deps
 dbt run
 ```
+
+> Obs: Caso queira testar todo o fluxo pode rodar direto as dags no airflow.
 
 As DAGs de ingestão e transformação ficam disponíveis na interface do Airflow em `localhost:8080`.

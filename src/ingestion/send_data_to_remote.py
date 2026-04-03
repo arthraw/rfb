@@ -50,6 +50,7 @@ def upload_files_to_dbfs():
                 logger.info(f"{file} sent to {volume_path}")
             except Exception as e:
                 logger.warning(f"Failed to send {file}: {e}")
-
+                
+    os.remove('/tmp/rfb_files.json') # remove the dictionary file, preparing for the next run
 if __name__ == '__main__':
     upload_files_to_dbfs()

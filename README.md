@@ -1,89 +1,124 @@
 # Projeto RFB
 
-Projeto de engenharia de dados e analytics com os dados públicos da Receita Federal do Brasil (CNPJ).
+Pipeline de engenharia de dados para ingestão, transformação e disponibilização dos dados cadastrais públicos de empresas da Receita Federal do Brasil (CNPJ), seguindo a arquitetura Medallion.
 
 ## Objetivo
 
-Ingerir, transformar e disponibilizar os dados cadastrais de empresas da RFB em um formato estruturado e analítico, seguindo a arquitetura Medallion.
+Processar os dados abertos do CNPJ da RFB em um formato estruturado e analítico, passando pelas camadas Bronze, Silver e Gold com rastreabilidade e qualidade de dados em cada etapa.
 
 ## Stack
 
-- **Databricks Community Edition** — plataforma de processamento
+- **Databricks Community Edition** — plataforma de processamento distribuído
 - **Delta Lake** — formato de armazenamento nas camadas Bronze, Silver e Gold
-- **DBT** — transformações SQL a partir da Bronze
+- **dbt** — transformações SQL a partir da camada Bronze
 - **Python / PySpark** — ingestão e carga inicial
 - **Databricks SDK** — upload de arquivos para Volumes
+- **Scrapy** — crawler para coleta dos arquivos no portal da RFB
+- **sidrapy** — fonte de dados do PIB (IBGE/SIDRA)
+- **Astro** — Gerenciador do Airflow
 
 ## Arquitetura
 
-```shell
+```plaintext
 Fonte (RFB)
     │
     ▼
-Staging (Volume)        ← arquivos .zip brutos da RFB
+Staging (Volume)        ← arquivos .csv brutos da RFB e IBGE
     │
     ▼
-Bronze (Delta Table)    ← CSV extraído, sem header, tudo como string
+Bronze (Delta Table)    ← dados sem tratamento com schema/colunas basicas aplicadas (apenas para organizar em tabelas)
     │
     ▼
-Silver (DBT)            ← schema aplicado, tipos corretos, colunas nomeadas
+Silver (dbt)            ← schema aplicado, tipos corretos, colunas nomeadas
     │
     ▼
-Gold (DBT)              ← agregações e visões analíticas
+Gold (dbt)              ← agregações e visões analíticas
 ```
 
 ## Estrutura do Projeto
 
-```shell
+```plaintext
 rfb/
-├── airflow_settings.yaml
-├── dags
-│   └── ingestion
-│       └── ingst_rfb_data.py
-├── Dockerfile
-├── include
-├── jobs
-│   └── readme.md
-├── packages.txt
-├── plugins
-├── poetry.lock
-├── pyproject.toml
-├── README.md
-├── requirements.txt
-├── rfb_crawler
-│   ├── __init__.py
-│   ├── items.py
-│   ├── middlewares.py
-│   ├── pipelines.py
-│   ├── settings.py
-│   └── spiders
-│       ├── __init__.py
-│       └── rfb_spider.py
-├── scrapy.cfg
-├── src
-│   ├── ingestion
-│   │   ├── download_rfb_data.py
-│   │   ├── dto
-│   │   └── send_data_to_remote.py
-│   └── transformation
-│       ├── dbt_internal_packages
-│       ├── dbt_packages
-│       ├── dbt_project.yml
-│       ├── logs
-│       ├── macros
-│       ├── models
-│       ├── package-lock.yml
-│       ├── packages.yml
-│       ├── README.md
-│       ├── seeds
-│       └── target
-└── tests
-    ├── dags
-    │   └── test_dag_example.py
-    └── __init__.py
-
+├── dags/
+│   ├── ingestion/
+│   └── transformation/
+├── rfb_crawler/
+│   ├── spiders/
+│   │   └── rfb_spider.py
+│   ├── pipelines.py
+│   └── settings.py
+├── src/
+│   ├── ingestion/
+│   │   ├── download_rfb_data.py
+│   │   ├── send_data_to_remote.py
+│   │   └── dto/
+│   └── dbt/
+│       ├── models/
+│       ├── macros/
+│       ├── seeds/
+│       └── dbt_project.yml
+└── tests/
+    └── dags/
 ```
 
-## Dados
+## Fontes de Dados
 
-Os dados são provenientes do portal de [Dados Abertos da Receita Federal](https://arquivos.receitafederal.gov.br/index.php/s/YggdBLfdninEJX9), atualizados mensalmente.
+- **CNPJ (RFB):** [Portal de Dados Abertos da Receita Federal](https://arquivos.receitafederal.gov.br/index.php/s/YggdBLfdninEJX9), atualizado mensalmente
+- **PIB:** API do IBGE via `sidrapy`
+
+## Como Rodar
+
+> **Pré-requisito:** é necessário ter acesso ao Databricks (pode ser a Community Edition) com Unity Catalog habilitado.
+
+### 1. Configurar o Unity Catalog
+
+No Databricks, abra um notebook e execute os comandos abaixo para criar o catálogo e os schemas necessários:
+
+```python
+spark.sql("CREATE CATALOG IF NOT EXISTS rfb")
+spark.sql("CREATE SCHEMA IF NOT EXISTS rfb.transient")
+spark.sql("CREATE SCHEMA IF NOT EXISTS rfb.bronze")
+spark.sql("CREATE SCHEMA IF NOT EXISTS rfb.silver")
+spark.sql("CREATE SCHEMA IF NOT EXISTS rfb.gold")
+```
+
+### 2. Instalar dependências locais
+
+```bash
+pip install poetry
+poetry install
+```
+
+### 3. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as credenciais do Databricks:
+
+```env
+DATABRICKS_HOST=https://<your-workspace>.azuredatabricks.net
+DATABRICKS_TOKEN=<your-token>
+```
+
+### 4. Executar airflow
+
+```bash
+# Inicia uma instancia do airflow, podendo rodar maunalmente as dags ou com agendamento
+astro dev start
+```
+
+### 5. Criar Variables do Airflow
+
+Crie as variaveis do databricks para as dags conseguirem conectar com fontes externas. (Ex: Databricks)
+
+![Tela do airflow com as variaveis](/imgs/variables_airflow.png)
+
+### 6. Executar as transformações com dbt OU Executar as dags direto na UI do airflow
+
+```bash
+cd src/dbt
+dbt deps
+dbt run
+```
+
+> Obs: Caso queira testar todo o fluxo pode rodar direto as dags no airflow.
+
+As DAGs de ingestão e transformação ficam disponíveis na interface do Airflow em `localhost:8080`.

@@ -42,7 +42,14 @@ def upload_files_to_dbfs():
         if file.endswith(".csv"):
             logger.info(f"Uploading {file} to DBFS...")
             local_path = f"/tmp/{file}"
-            volume_path = f"/Volumes/rfb/transient/transient/{file}"
+
+            if 'ESTABELECIMENTO' in file.upper():
+                volume_path = f"/Volumes/rfb/transient/transient/estabelecimento/{file}"
+            elif 'IBGE' in file.upper():
+                volume_path = f"/Volumes/rfb/transient/transient/ibge/{file}"
+            else:
+                volume_path = f"/Volumes/rfb/transient/transient/municipios/{file}"
+            
             try:
                 with open(local_path, "rb") as f:
                     w.files.upload(volume_path, f, overwrite=True)
@@ -50,5 +57,7 @@ def upload_files_to_dbfs():
                 logger.info(f"{file} sent to {volume_path}")
             except Exception as e:
                 logger.warning(f"Failed to send {file}: {e}")
-
-upload_files_to_dbfs()
+                
+    os.remove('/tmp/rfb_files.json') # remove the dictionary file, preparing for the next run
+if __name__ == '__main__':
+    upload_files_to_dbfs()

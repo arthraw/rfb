@@ -36,6 +36,11 @@ def ingst_rfb_data():
         bash_command="python -m src.ingestion.read_ibge_data",
     )
 
+    download_municipios_rfb = BashOperator(
+        task_id="download_municipios_rfb",
+        bash_command="python -m src.ingestion.municipios_rfb",
+    )
+
     send_files = BashOperator(
         task_id="send_files",
         bash_command="python -m src.ingestion.send_data_to_remote",
@@ -49,7 +54,7 @@ def ingst_rfb_data():
     )
 
     log.info("Defined tasks for RFB data ingestion DAG.")
-    define_files_to_download >> [download_files, download_ibge_data] >> send_files >> trigger_transformation_dag
+    define_files_to_download >> [download_files, download_ibge_data, download_municipios_rfb] >> send_files >> trigger_transformation_dag
     log.info("Set task dependencies for RFB data ingestion DAG.")
 
 ingst_rfb_data()

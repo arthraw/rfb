@@ -23,7 +23,7 @@ def ingest_ibge_data():
         'Município': 'NOM_MUNICIPIO'
     })
     df_pib = df_pib[['COD_MUNICIPIO', 'NOM_MUNICIPIO', 'VALOR']]
-    df_pib.to_csv('/tmp/PIB_MUNICIPIOS.csv', index=False, sep=';')
+    df_pib.to_csv('/tmp/IBGE_PIB_MUNICIPIOS.csv', index=False, sep=';')
 
 
 if __name__ == "__main__":

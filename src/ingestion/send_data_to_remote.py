@@ -42,7 +42,14 @@ def upload_files_to_dbfs():
         if file.endswith(".csv"):
             logger.info(f"Uploading {file} to DBFS...")
             local_path = f"/tmp/{file}"
-            volume_path = f"/Volumes/rfb/transient/transient/estabelecimento/{file}" if 'ESTABELECIMENTO' in file else f"/Volumes/rfb/transient/transient/ibge/{file}"
+
+            if 'ESTABELECIMENTO' in file.upper():
+                volume_path = f"/Volumes/rfb/transient/transient/estabelecimento/{file}"
+            elif 'IBGE' in file.upper():
+                volume_path = f"/Volumes/rfb/transient/transient/ibge/{file}"
+            else:
+                volume_path = f"/Volumes/rfb/transient/transient/municipios/{file}"
+            
             try:
                 with open(local_path, "rb") as f:
                     w.files.upload(volume_path, f, overwrite=True)

@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: raw
+    catalog: rfb
+    schema: raw
+    tables:
+      - name: raw_estabelecimento
+        description: "Dados brutos de estabelecimentos vindos do repositório de dados da Receita Federal"
+      
+      - name: raw_municipio_pib
+        description: "Dados brutos de municípios e PIB vindos do repositório de dados do IBGE"
+
+      - name: raw_municipios_rfb
+        description: "Dados brutos de municípios vindos do repositório de dados da Receita Federal"

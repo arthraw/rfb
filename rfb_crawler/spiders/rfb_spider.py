@@ -49,14 +49,16 @@ class RfbSpider(scrapy.Spider):
             if href.endswith("/"):
                 yield self.propfind(full_url, callback=self.parse_propfind)
                 continue
-
-            if current_month in href and "Estabelecimentos9" in href:
-                result = {
-                    'package_download_url' : full_url,
-                    'file_name' : href.split("/")[-1],
-                    'auth_token' : self.token
-                }
-                self.data_list.append(result)
+            targets = ["Estabelecimentos9", "Cnaes", "Empresas9"]
+            for target in targets:
+                if current_month in href and target in href:
+                    result = {
+                        'package_download_url': full_url,
+                        'file_name': href.split("/")[-1],
+                        'auth_token': self.token
+                    }
+                    self.data_list.append(result)
+                    break
     
     def closed(self, reason):
         import json

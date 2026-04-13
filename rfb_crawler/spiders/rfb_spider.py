@@ -12,7 +12,7 @@ class RfbSpider(scrapy.Spider):
     data_list = []
     logger = logging.getLogger(name)
 
-    token = "YggdBLfdninEJX9"
+    token = "YggdBLfdninEJX9" # public RFB token, can be used for authentication in PROPFIND requests
     base_url = "https://arquivos.receitafederal.gov.br/public.php/webdav/"
     
     def start_requests(self):
@@ -38,7 +38,6 @@ class RfbSpider(scrapy.Spider):
         ns = {"d": "DAV:"}
 
         current_month = datetime.now().strftime("%Y-%m")
-        # current_month = "2026-01"
         for resp in tree.findall("d:response", ns):
 
             href = resp.find("d:href", ns).text
@@ -60,8 +59,8 @@ class RfbSpider(scrapy.Spider):
                 self.data_list.append(result)
     
     def closed(self, reason):
-        import json, os
-        print("Spider finalizado. Criando arquivo…")
+        import json
+        print("Spider finish, generating JSON file.")
         with open('/tmp/rfb_files.json', 'w') as f:
             json.dump(self.data_list, f, indent=4)
         self.logger.info(f"Arquivo JSON salvo com {len(self.data_list)} entradas")

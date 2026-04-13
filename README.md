@@ -6,6 +6,30 @@ Pipeline de engenharia de dados para ingestão, transformação e disponibiliza�
 
 Processar os dados abertos do CNPJ da RFB em um formato estruturado e analítico, passando pelas camadas Bronze, Silver e Gold com rastreabilidade e qualidade de dados em cada etapa.
 
+## Desafio
+
+O objetivo principal deste projeto foi transformar o caos de dados brutos da Receita Federal e do IBGE em uma arquitetura analítica organizada, capaz de responder a perguntas estratégicas de expansão de mercado.
+
+### A Problemática
+
+Imagine uma empresa que deseja expandir sua atuação no Brasil. Olhar apenas para a contagem total de CNPJs por cidade é um erro estratégico comum, pois não diferencia o potencial econômico real das regiões. O desafio consistiu em:
+
+- Tratamento de Volume: Processar milhões de registros da Receita Federal (estabelecimentos e empresas) garantindo a integridade dos dados (como o tratamento de zeros à esquerda em CNPJs e CEPs).
+
+- Cruzamento de Fontes Distintas: Unificar dados cadastrais (RFB) com indicadores macroeconômicos (PIB Municipal - IBGE).
+
+- Modelagem Star Schema: Estruturar as camadas de dados (Staging, Intermediate e Marts) para que um analista de negócios possa extrair insights sem necessidade de Joins complexos ou limpeza manual.
+
+### O Valor de Negócio
+
+Com a modelagem final (fct_estabelecimentos cruzada com dim_municipio), o projeto permite identificar:
+
+- Municípios com PIB per capita alto mas baixa densidade de empresas de grande porte.
+
+- Sazonalidade e ritmo de abertura de novas empresas nos últimos anos.
+
+- Perfil de saúde econômica por região, permitindo que o time de marketing direcione investimentos para onde há maior capital circulante.
+
 ## Stack
 
 - **Databricks Community Edition** — plataforma de processamento distribuído
@@ -35,6 +59,10 @@ Silver (dbt)            ← schema aplicado, tipos corretos, colunas nomeadas
 Gold (dbt)              ← agregações e visões analíticas
 ```
 
+## Modelagem de Dados - Gold Layer
+
+![Modelagem das tabelas (Gold Layer)](/imgs/modelagem.png)
+
 ## Estrutura do Projeto
 
 ```plaintext
@@ -42,24 +70,22 @@ rfb/
 ├── dags/
 │   ├── ingestion/
 │   └── transformation/
+├── jobs/ # Jobs para ingestão dos dados
+├── quality/ # Validação com Data Quality
 ├── rfb_crawler/
 │   ├── spiders/
-│   │   └── rfb_spider.py
-│   ├── pipelines.py
-│   └── settings.py
 ├── src/
 │   ├── ingestion/
-│   │   ├── download_rfb_data.py
-│   │   ├── send_data_to_remote.py
-│   │   └── dto/
 │   └── dbt/
 │       ├── models/
 │       ├── macros/
 │       ├── seeds/
-│       └── dbt_project.yml
+│       ├── tests/
 └── tests/
     └── dags/
 ```
+
+![Dags de ingestao](/imgs/dag_ingestao.png)
 
 ## Fontes de Dados
 

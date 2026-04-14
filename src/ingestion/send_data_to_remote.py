@@ -49,8 +49,8 @@ def upload_files_to_dbfs():
                 volume_path = f"/Volumes/rfb/transient/transient/ibge/{file}"
             elif 'CNAES' in file.upper():
                 volume_path = f"/Volumes/rfb/transient/transient/cnae/{file}"
-            elif 'EMPRESESAS' in file.upper():
-                volume_path = f"/Volumes/rfb/transient/transient/empresas/{file}"
+            elif 'EMPRESAS' in file.upper():
+                volume_path = f"/Volumes/rfb/transient/transient/empresa/{file}"
             else:
                 volume_path = f"/Volumes/rfb/transient/transient/municipios/{file}"
             

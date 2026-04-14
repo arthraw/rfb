@@ -65,4 +65,4 @@ class RfbSpider(scrapy.Spider):
         print("Spider finish, generating JSON file.")
         with open('/tmp/rfb_files.json', 'w') as f:
             json.dump(self.data_list, f, indent=4)
-        self.logger.info(f"Arquivo JSON salvo com {len(self.data_list)} entradas")
+        self.logger.info(f"Json file saved with {len(self.data_list)} entries")

@@ -13,3 +13,9 @@ sources:
 
       - name: raw_municipios_rfb
         description: "Dados brutos de municípios vindos do repositório de dados da Receita Federal"
+      
+      - name: raw_cnae
+        description: "Dados brutos de CNAE vindos do repositório de dados da Receita Federal"
+      
+      - name: raw_empresa
+        description: "Dados brutos de empresas vindos do repositório de dados da Receita Federal"

@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: fact_cadastro_estabelecimento
+    description: "Fato com dados cadastrais de estabelecimentos da RFB"

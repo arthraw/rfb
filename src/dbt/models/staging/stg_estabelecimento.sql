@@ -4,6 +4,7 @@ with source as (
 estabelecimentos as (
     select
         concat(cnpj_basico, cnpj_ordem, cnpj_dv)                    as COD_CNPJ,
+        cnpj_basico                                                 as COD_CNPJ_BASICO,
         case cast(identificador_matriz_filial as int)
             when 1 then 'MATRIZ'
             when 2 then 'FILIAL'
@@ -23,7 +24,7 @@ estabelecimentos as (
         nome_cidade_exterior                                        as NOM_CIDADE_EXTERIOR,
         pais                                                        as DSC_PAIS,
         try_to_date(data_inicio_atividade, 'yyyyMMdd')              as DAT_INICIO_ATIVIDADE,
-        cnae_principal                                              as DSC_CNAE_PRINCIPAL,
+        cast(cnae_principal as int)                                 as COD_CNAE_PRINCIPAL,
         cnae_secundario                                             as DSC_CNAE_SECUNDARIO,
         upper(tipo_logradouro)                                      as TPO_LOGRADOURO,
         upper(logradouro)                                           as DSC_LOGRADOURO,
@@ -32,7 +33,7 @@ estabelecimentos as (
         upper(bairro)                                               as DSC_BAIRRO,
         upper(cep)                                                  as DSC_CEP,
         upper(uf)                                                   as DSC_UF,
-        upper(municipio)                                            as DSC_MUNICIPIO,
+        cast(municipio as int)                                      as COD_MUNICIPIO,
         case
             when ddd1 is not null and telefone1 is not null
             then concat(ddd1, telefone1)

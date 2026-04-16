@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_municipio_joined_to_pib
+    description: "Municípios com dados de PIB após join com de-para"
+    columns:
+      - name: COD_MUNICIPIO_RFB
+        description: "Código RFB do município após join com de-para"
+        tests:
+          - not_null
+
+      - name: NOM_MUNICIPIO
+        description: "Nome do município"
+
+      - name: PIB
+        description: "PIB do município"
+
+      - name: DSC_UF

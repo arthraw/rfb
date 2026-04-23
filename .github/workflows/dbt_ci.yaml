@@ -55,21 +55,20 @@ jobs:
           EOF
 
       - name: dbt deps
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
-        run: dbt deps
+        run: dbt deps --project-dir ${{ env.DBT_PROJECT_DIR }}
 
       - name: dbt build
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
         run: |
           dbt build \
+            --project-dir ${{ env.DBT_PROJECT_DIR }} \
             --target ci \
             --fail-fast
 
       - name: dbt test
         if: success()
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
         run: |
           dbt test \
+            --project-dir ${{ env.DBT_PROJECT_DIR }} \
             --target ci
 
       - name: Upload dbt logs on failure

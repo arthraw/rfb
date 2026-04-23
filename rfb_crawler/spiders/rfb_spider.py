@@ -49,7 +49,12 @@ class RfbSpider(scrapy.Spider):
             if href.endswith("/"):
                 yield self.propfind(full_url, callback=self.parse_propfind)
                 continue
-            targets = ["Estabelecimentos9", "Cnaes", "Empresas9"]
+
+            targets = ["Estabelecimentos0", "Estabelecimentos1", "Estabelecimentos2", "Estabelecimentos3", "Estabelecimentos4",
+                       "Estabelecimentos5", "Estabelecimentos6", "Estabelecimentos7", "Estabelecimentos8", "Estabelecimentos9",
+                       "Empresas0", "Empresas1", "Empresas2", "Empresas3", "Empresas4",
+                       "Empresas5", "Empresas6", "Empresas7", "Empresas8", "Empresas9", "Cnaes"]
+
             for target in targets:
                 if current_month in href and target in href:
                     result = {

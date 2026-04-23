@@ -1,0 +1,23 @@
+select
+        COD_CNPJ,
+        COD_CNAE_PRINCIPAL as COD_CNAE,
+        COD_MUNICIPIO,
+        COD_CNPJ_BASICO as COD_EMPRESA,
+        DSC_MATRIZ_FILIAL,
+        NOM_FANTASIA,
+        DSC_SITUACAO_CADASTRAL,
+        DSC_MOTIVO_SITUACAO_CADASTRAL,
+        NOM_CIDADE_EXTERIOR,
+        DSC_PAIS,
+        TPO_LOGRADOURO,
+        DSC_LOGRADOURO,
+        DSC_NUM_FACHADA,
+        DSC_COMPLEMENTO,
+        DSC_BAIRRO,
+        DSC_CEP,
+        DSC_TELEFONE1,
+        DSC_TELEFONE2,
+        DSC_FAX,
+        DSC_EMAIL,
+        DAT_INICIO_ATIVIDADE
+from {{ ref('stg_estabelecimento') }} 

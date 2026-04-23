@@ -13,11 +13,14 @@ dependencies = [
     "azure-storage-file-datalake (>=12.23.0,<13.0.0)",
     "azure-identity (>=1.25.2,<2.0.0)",
     "dbt-core (>=1.11.6,<2.0.0)",
-    "databricks-sdk (>=0.93.0,<0.94.0)",
+    "databricks-sdk (<0.78.0)",
     "databricks-cli (>=0.18.0,<0.19.0)",
     "sidrapy (>=0.1.4,<0.2.0)",
     "apache-airflow-providers-databricks (>=7.9.0,<8.0.0)",
     "great-expectations (>=1.15.2,<2.0.0)",
+    "astronomer-cosmos (>=1.14.0,<2.0.0)",
+    "dbt-databricks (>=1.11.6,<2.0.0)",
+    "pytest (>=9.0.3,<10.0.0)",
 ]
 
 [tool.poetry]

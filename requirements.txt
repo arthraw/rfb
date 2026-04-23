@@ -3,8 +3,10 @@ scrapy
 lxml
 pendulum
 databricks-cli
-databricks-sdk
 requests
 apache-airflow-providers-databricks (>=7.9.0,<8.0.0)
 sidrapy
 great-expectations (>=1.15.2,<2.0.0)
+databricks-sdk<0.78.0
+dbt-databricks~=1.11.6
+astronomer-cosmos

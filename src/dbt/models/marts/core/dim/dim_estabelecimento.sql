@@ -1,6 +1,6 @@
 select
         COD_CNPJ,
-        COD_CNAE_PRINCIPAL,
+        COD_CNAE_PRINCIPAL as COD_CNAE,
         COD_MUNICIPIO,
         COD_CNPJ_BASICO as COD_EMPRESA,
         DSC_MATRIZ_FILIAL,

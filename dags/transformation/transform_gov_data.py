@@ -1,18 +1,42 @@
-from airflow.sdk import dag, task_group, Variable, task
+from airflow.sdk import dag, task_group, Variable
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.providers.databricks.operators.databricks import DatabricksSubmitRunOperator
 from pendulum import datetime
 from datetime import datetime as dt
+from pathlib import Path
+from cosmos.profiles.databricks import DatabricksTokenProfileMapping
+from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig
+from cosmos.constants import LoadMode
 import logging
+from cosmos import RenderConfig
 
+render_config = RenderConfig(
+    emit_datasets=False,
+    load_method=LoadMode.DBT_LS,
+    enable_mock_profile=True,
+)
 DATABRICKS_CONN_ID = Variable.get("DATABRICKS_CONN_ID")
 DATABRICKS_ROOT_PROJECT_PATH = Variable.get("DATABRICKS_ROOT_PROJECT_PATH")
 log = logging.getLogger(__name__)
 log = LoggingMixin().log
 default_args = {
     'owner': 'Arthur Andrade',
-    'retries': 1,
+    'retries': 2,
 }
+
+DBT_PROJECT_PATH = Path("/usr/local/airflow/src/dbt")
+
+profile_config = ProfileConfig(
+    profile_name="default",
+    target_name="dev",
+    profile_mapping=DatabricksTokenProfileMapping(
+        conn_id="databricks_default",
+        profile_args={
+            "catalog": "rfb",
+            "schema": "trusted",
+        },
+    ),
+)
 
 @dag(
     dag_id="transform_gov_data",
@@ -164,7 +188,28 @@ def transform_gov_data():
         [rfb_dq, ibge_dq, municipios_dq, cnae_dq, empresa_dq]
         log.info('Data quality tests completed.')
 
+    @task_group(
+        group_id="dbt_transformations",
+        tooltip="Group of tasks to run dbt transformations",
+        ui_color="#e08e24"
+    )
+    def dbt_transformations():
+        DbtTaskGroup(
+            group_id="dbt_models",
+            project_config=ProjectConfig(
+                dbt_project_path=DBT_PROJECT_PATH,
+            ),
+            profile_config=profile_config,
+            execution_config=ExecutionConfig(
+                dbt_executable_path="/usr/local/bin/dbt",
+            ),
+            render_config=render_config,
+            operator_args={
+                "install_deps": True,
+                "openlineage_events_completes": [], 
+            },
+        )
 
-    databricks_jobs() >> data_quality_tests()
+    databricks_jobs() >> data_quality_tests() >> dbt_transformations()
 
 transform_gov_data()

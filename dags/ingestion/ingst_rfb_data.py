@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 log = LoggingMixin().log
 default_args = {
     'owner': 'Arthur Andrade',
-    'retries' : 1,
+    'retries' : 2,
 }
 
 @dag(

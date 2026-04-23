@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml <<EOF
-          default:
+          dbt:
             target: ci
             outputs:
               ci:

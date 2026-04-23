@@ -40,6 +40,9 @@ Com a modelagem final (fct_estabelecimentos cruzada com dim_municipio), o projet
 - **Scrapy** — crawler para coleta dos arquivos no portal da RFB
 - **sidrapy** — fonte de dados do PIB (IBGE/SIDRA)
 - **Astro** — Gerenciador do Airflow
+- **GitHub Actions** — CI/CD Workflows
+- **Great Expectatio** — Testes de qualidade dos dados
+- **Astronomer Cosmos** — Gerenciamento do DBT nas dags do airflow
 
 ## Arquitetura
 

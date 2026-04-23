@@ -1,0 +1,81 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/dbt/**'
+
+jobs:
+  dbt-ci:
+    name: dbt Build & Test
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_PROJECT_DIR: src/dbt
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('./requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks~=1.11.6
+
+      - name: Create dbt profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<EOF
+          default:
+            target: ci
+            outputs:
+              ci:
+                type: databricks
+                host: ${{ secrets.DATABRICKS_HOST }}
+                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DATABRICKS_TOKEN }}
+                catalog: rfb
+                schema: trusted
+                threads: 16
+          EOF
+
+      - name: dbt deps
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: dbt deps
+
+      - name: dbt build
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: |
+          dbt build \
+            --target ci \
+            --fail-fast
+
+      - name: dbt test
+        if: success()
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: |
+          dbt test \
+            --target ci
+
+      - name: Upload dbt logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-logs
+          path: ${{ env.DBT_PROJECT_DIR }}/logs/
+          retention-days: 7

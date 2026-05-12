@@ -4,31 +4,26 @@ Pipeline de engenharia de dados para ingestão, transformação e disponibiliza�
 
 ## Objetivo
 
-Processar os dados abertos do CNPJ da RFB em um formato estruturado e analítico, passando pelas camadas Bronze, Silver e Gold com rastreabilidade e qualidade de dados em cada etapa.
+Transformar os dados abertos do CNPJ da RFB em um formato estruturado e analítico, passando pelas camadas Bronze, Silver e Gold com rastreabilidade e qualidade em cada etapa.
 
 ## Desafio
 
-O objetivo principal deste projeto foi transformar o caos de dados brutos da Receita Federal e do IBGE em uma arquitetura analítica organizada, capaz de responder a perguntas estratégicas de expansão de mercado.
+O principal objetivo deste projeto foi organizar os dados brutos da Receita Federal e do IBGE em uma arquitetura analítica consistente, capaz de responder a perguntas estratégicas sobre expansão de mercado.
 
-### A Problemática
+### A problemática
 
-Imagine uma empresa que deseja expandir sua atuação no Brasil. Olhar apenas para a contagem total de CNPJs por cidade é um erro estratégico comum, pois não diferencia o potencial econômico real das regiões. O desafio consistiu em:
+Imagine uma empresa que deseja expandir sua atuação no Brasil. Olhar apenas para a contagem total de CNPJs por cidade é um erro comum, pois não considera o potencial econômico real das regiões. O desafio consistiu em:
 
-- Tratamento de Volume: Processar milhões de registros da Receita Federal (estabelecimentos e empresas) garantindo a integridade dos dados (como o tratamento de zeros à esquerda em CNPJs e CEPs).
+- **Tratamento de volume:** processar milhões de registros da Receita Federal (estabelecimentos e empresas) garantindo a integridade dos dados, incluindo o tratamento de zeros à esquerda em CNPJs e CEPs.
+- **Cruzamento de fontes distintas:** unificar dados cadastrais da RFB com indicadores macroeconômicos do IBGE.
+- **Modelagem em Star Schema:** estruturar as camadas de dados (Staging, Intermediate e Marts) para permitir análises sem necessidade de joins complexos ou limpeza manual.
 
-- Cruzamento de Fontes Distintas: Unificar dados cadastrais (RFB) com indicadores macroeconômicos (PIB Municipal - IBGE).
+### Valor de negócio
 
-- Modelagem Star Schema: Estruturar as camadas de dados (Staging, Intermediate e Marts) para que um analista de negócios possa extrair insights sem necessidade de Joins complexos ou limpeza manual.
+Com a modelagem final (fact_cadastro_estabelecimento cruzada com dim_municipio), o projeto permite identificar:
 
-### O Valor de Negócio
-
-Com a modelagem final (fct_estabelecimentos cruzada com dim_municipio), o projeto permite identificar:
-
-- Municípios com PIB per capita alto mas baixa densidade de empresas de grande porte.
-
-- Sazonalidade e ritmo de abertura de novas empresas nos últimos anos.
-
-- Perfil de saúde econômica por região, permitindo que o time de marketing direcione investimentos para onde há maior capital circulante.
+- municípios com PIB per capita alto e baixa densidade de empresas de grande porte;
+- região com perfil de saúde econômica favorável para direcionar investimentos de marketing e expansão.
 
 ## Stack
 
@@ -36,13 +31,13 @@ Com a modelagem final (fct_estabelecimentos cruzada com dim_municipio), o projet
 - **Delta Lake** — formato de armazenamento nas camadas Bronze, Silver e Gold
 - **dbt** — transformações SQL a partir da camada Bronze
 - **Python / PySpark** — ingestão e carga inicial
-- **Databricks SDK** — upload de arquivos para Volumes
+- **Databricks SDK** — upload de arquivos para volumes
 - **Scrapy** — crawler para coleta dos arquivos no portal da RFB
 - **sidrapy** — fonte de dados do PIB (IBGE/SIDRA)
-- **Astro** — Gerenciador do Airflow
-- **GitHub Actions** — CI/CD Workflows
-- **Great Expectatio** — Testes de qualidade dos dados
-- **Astronomer Cosmos** — Gerenciamento do DBT nas dags do airflow
+- **Astro** — gerenciador do Airflow
+- **GitHub Actions** — CI/CD workflows
+- **Great Expectations** — testes de qualidade dos dados
+- **Astronomer Cosmos** — gerenciamento do dbt nas DAGs do Airflow
 
 ## Arquitetura
 
@@ -50,10 +45,10 @@ Com a modelagem final (fct_estabelecimentos cruzada com dim_municipio), o projet
 Fonte (RFB)
     │
     ▼
-Staging (Volume)        ← arquivos .csv brutos da RFB e IBGE
+Staging (Volume)        ← arquivos .csv brutos da RFB e do IBGE
     │
     ▼
-Bronze (Delta Table)    ← dados sem tratamento com schema/colunas basicas aplicadas (apenas para organizar em tabelas)
+Bronze (Delta Table)    ← dados sem tratamento, com schema/colunas básicas aplicadas (apenas para organizar em tabelas)
     │
     ▼
 Silver (dbt)            ← schema aplicado, tipos corretos, colunas nomeadas
@@ -66,7 +61,7 @@ Gold (dbt)              ← agregações e visões analíticas
 
 ![Modelagem das tabelas (Gold Layer)](/imgs/modelagem.png)
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```plaintext
 rfb/
@@ -88,20 +83,21 @@ rfb/
     └── dags/
 ```
 
-![Dags de ingestao](/imgs/dag_ingestao.png)
+![DAGs de ingestão](/imgs/dag_ingestao.png)
 
-## Fontes de Dados
+## Fontes de dados
 
-- **CNPJ (RFB):** [Portal de Dados Abertos da Receita Federal](https://arquivos.receitafederal.gov.br/index.php/s/YggdBLfdninEJX9), atualizado mensalmente
+- **CNPJ (RFB):** [Portal de Dados Abertos da Receita Federal](https://arquivos.receitafederal.gov.br/index.php/s/YggdBLfdninEJX9) — atualizado mensalmente
 - **PIB:** API do IBGE via `sidrapy`
+- **Municípios:** CSV com os códigos de municípios IBGE para cruzar a Receita com o IBGE
 
-## Como Rodar
+## Como rodar
 
-> **Pré-requisito:** é necessário ter acesso ao Databricks (pode ser a Community Edition) com Unity Catalog habilitado.
+> **Pré-requisito:** ter acesso ao Databricks (pode ser a Community Edition) com Unity Catalog habilitado.
 
 ### 1. Configurar o Unity Catalog
 
-No Databricks, abra um notebook e execute os comandos abaixo para criar o catálogo e os schemas necessários:
+No Databricks, abra um notebook e execute:
 
 ```python
 spark.sql("CREATE CATALOG IF NOT EXISTS rfb")
@@ -127,20 +123,20 @@ DATABRICKS_HOST=https://<your-workspace>.azuredatabricks.net
 DATABRICKS_TOKEN=<your-token>
 ```
 
-### 4. Executar airflow
+### 4. Executar o Airflow
 
 ```bash
-# Inicia uma instancia do airflow, podendo rodar maunalmente as dags ou com agendamento
+# Inicia uma instância do Airflow, permitindo executar as DAGs manualmente ou por agendamento
 astro dev start
 ```
 
-### 5. Criar Variables do Airflow
+### 5. Criar variáveis no Airflow
 
-Crie as variaveis do databricks para as dags conseguirem conectar com fontes externas. (Ex: Databricks)
+Configure as variáveis do Databricks para que as DAGs consigam conectar às fontes externas.
 
-![Tela do airflow com as variaveis](/imgs/variables_airflow.png)
+![Tela do Airflow com as variáveis](/imgs/variables_airflow.png)
 
-### 6. Executar as transformações com dbt OU Executar as dags direto na UI do airflow
+### 6. Executar transformações com dbt ou usar a UI do Airflow
 
 ```bash
 cd src/dbt
@@ -148,6 +144,6 @@ dbt deps
 dbt run
 ```
 
-> Obs: Caso queira testar todo o fluxo pode rodar direto as dags no airflow.
+> Observação: se quiser testar todo o fluxo, pode executar as DAGs diretamente no Airflow.
 
-As DAGs de ingestão e transformação ficam disponíveis na interface do Airflow em `localhost:8080`.
+As DAGs de ingestão e transformação ficam disponíveis em `localhost:8080`.
